@@ -83,6 +83,7 @@ Stage	What	Status
 B0/B1 harness, dot and matmul tests	src/test_mac	done
 Xqmac8 C reference	host tests	done
 Xqmac8 in Spike	extension + test	done
+Xqmac8 in a tiny matrix kernel	3 x 8 by 8 x 4, compare with scalar B0/B1	done
 Profile a real DeiT-Tiny layer in Spike		[todo]
 Full model in C (B0/B1)		[todo]
 Xqmac8 in the kernels (X1)		[todo]
@@ -91,7 +92,8 @@ Midterm report		[date]
 Xqmac8 in CV-Wally RTL + kernel run		[todo]
 Synthesis		[todo]
 Extension		[todo]
-Final report		[date]
+Final report		[todo]
+
 8. Risks
 Integer softmax/GELU/LayerNorm might eat the speedup from the matmuls (Amdahl).
 The three-read-port issue could make the RTL change bigger than expected.

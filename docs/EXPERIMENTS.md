@@ -35,11 +35,22 @@ Same 4 directed cases, plus 512 random ones. All passed.
 
 This shows the instruction does what the reference says in Spike. It says nothing about CV-Wally or cycles.
 
-Next
-Profile one real DeiT-Tiny layer (instruction mix, MACs per instruction) in B0/B1.
-Put Xqmac8 into the matmul kernel and measure the instruction count against B1.
-Add Xrequant8 once we know how much requantization costs.
-Not done yet
-Anything on a real model
-Spike instruction-count numbers
-RTL, cycle counts, area
+Xqmac8 in a tiny matrix kernel (Oct 15)
+
+Added a 3 x 8 by 8 x 4 signed INT8 matrix-multiply test. The B0 and B1 builds
+use ordinary C multiply-accumulate. The X1 build packs each row and column
+into eight byte lanes and uses one Xqmac8 instruction per output. All three
+builds use the same deterministic inputs and check every output against an
+int64 reference.
+
+sh
+make -C src/test_mac xqmac8-matrix-test
+
+This is a correctness integration test. The software packs values in the
+kernel and the matrix is intentionally small, so it is not a performance
+comparison or a representative model workload. Instruction profiling of a
+larger kernel is still to be done.
+
+Run on October 15, 2026: B0, B1, and X1 all passed with checksum `32584`.
+The matching checksums are a convenient summary; each output was also checked
+against the int64 reference.
