@@ -1,0 +1,27 @@
+{
+  "configuration": "X1",
+  "elf": "projection_X1",
+  "function": "matrix_multiply_xqmac8_transposed",
+  "function_size_bytes": 100,
+  "work_units": 7262208,
+  "dynamic_instructions": 5712813,
+  "custom_instructions": 907776,
+  "work_units_per_instruction": 1.271214023634241,
+  "instruction_mix": {
+    "loads": 1815552,
+    "stores": 37824,
+    "integer_alu": 2005863,
+    "multiply": 0,
+    "branch": 945798,
+    "custom": 907776,
+    "other": 0
+  },
+  "compiler_flags": "-gdwarf-2 -march=rv64imc_zicsr -mabi=lp64 -mcmodel=medany -nostdlib -static -lm -fno-tree-loop-distribute-patterns -ffunction-sections -fdata-sections -Wl,--gc-sections -O2 -DUSE_XQMAC8",
+  "command": [
+    "/home/lwtb0/riscv/riscv-isa-sim/build/spike",
+    "-g",
+    "--isa=rv64imc_zicsr",
+    "--extension=xqmac",
+    "projection_X1"
+  ]
+}

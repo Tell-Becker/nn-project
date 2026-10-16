@@ -84,9 +84,9 @@ B0/B1 harness, dot and matmul tests	src/test_mac	done
 Xqmac8 C reference	host tests	done
 Xqmac8 in Spike	extension + test	done
 Xqmac8 in a tiny matrix kernel	3 x 8 by 8 x 4, compare with scalar B0/B1	done
-Profile a real DeiT-Tiny layer in Spike		[todo]
+Profile a provisional projection-shaped kernel in Spike		done; shape not checkpoint-verified
 Full model in C (B0/B1)		[todo]
-Xqmac8 in the kernels (X1)		[todo]
+Xqmac8 in a provisional projection kernel (X1)	Spike correctness and instruction profile	done; model checkpoint not verified
 Xrequant8 (X2)		[todo]
 Midterm report		[date]
 Xqmac8 in CV-Wally RTL + kernel run		[todo]

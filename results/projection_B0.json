@@ -1,0 +1,26 @@
+{
+  "configuration": "B0",
+  "elf": "projection_B0",
+  "function": "matrix_multiply_scalar_transposed",
+  "function_size_bytes": 268,
+  "work_units": 7262208,
+  "dynamic_instructions": 298887825,
+  "custom_instructions": 0,
+  "work_units_per_instruction": 0.024297436672102653,
+  "instruction_mix": {
+    "loads": 65587410,
+    "stores": 14676109,
+    "integer_alu": 203985824,
+    "multiply": 7262208,
+    "branch": 7376274,
+    "custom": 0,
+    "other": 0
+  },
+  "compiler_flags": "-gdwarf-2 -march=rv64imc_zicsr -mabi=lp64 -mcmodel=medany -nostdlib -static -lm -fno-tree-loop-distribute-patterns -ffunction-sections -fdata-sections -Wl,--gc-sections -O0",
+  "command": [
+    "/home/lwtb0/riscv/riscv-isa-sim/build/spike",
+    "-g",
+    "--isa=rv64imc_zicsr",
+    "projection_B0"
+  ]
+}

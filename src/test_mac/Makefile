@@ -3,6 +3,7 @@ RISCV_CC ?= $(if $(wildcard $(HOME)/riscv/bin/riscv64-unknown-elf-gcc),$(HOME)/r
 OBJDUMP ?= $(if $(wildcard $(HOME)/riscv/bin/riscv64-unknown-elf-objdump),$(HOME)/riscv/bin/riscv64-unknown-elf-objdump,riscv64-unknown-elf-objdump)
 SPIKE ?= $(if $(wildcard $(HOME)/riscv/riscv-isa-sim/build/spike),$(HOME)/riscv/riscv-isa-sim/build/spike,spike)
 SPIKE_LIBDIR ?= $(HOME)/riscv/riscv-isa-sim/build
+NM ?= $(if $(wildcard $(HOME)/riscv/bin/riscv64-unknown-elf-nm),$(HOME)/riscv/bin/riscv64-unknown-elf-nm,riscv64-unknown-elf-nm)
 
 COMMON_CFLAGS = -gdwarf-2 -march=rv64imc_zicsr -mabi=lp64 -mcmodel=medany \
 	-nostdlib -static -lm -fno-tree-loop-distribute-patterns \
@@ -11,7 +12,8 @@ CFLAGS_B0 ?= $(COMMON_CFLAGS) -O0
 CFLAGS_B1 ?= $(COMMON_CFLAGS) -O2
 SOURCES = $(TARGET).c ../common/crt.S ../common/syscalls.c
 
-.PHONY: all xqmac8-host-test xqmac8-spike-test xqmac8-matrix-test clean
+.PHONY: all xqmac8-host-test xqmac8-spike-test xqmac8-matrix-test \
+	projection-benchmark projection-test profile-projection clean
 
 all: $(TARGET) $(TARGET)_B1 $(TARGET).objdump $(TARGET)_B1.objdump
 
@@ -27,6 +29,47 @@ xqmac8-matrix-test: matrix_xqmac8_B0 matrix_xqmac8_B1 matrix_xqmac8_X1
 	$(SPIKE) --isa=rv64imc_zicsr matrix_xqmac8_B1
 	LD_LIBRARY_PATH="$(SPIKE_LIBDIR):$${LD_LIBRARY_PATH:-}" \
 		$(SPIKE) --isa=rv64imc_zicsr --extension=xqmac matrix_xqmac8_X1
+
+projection-benchmark: projection_B0 projection_B1 projection_X1
+
+projection-test: projection-benchmark
+	$(SPIKE) --isa=rv64imc_zicsr projection_B0
+	$(SPIKE) --isa=rv64imc_zicsr projection_B1
+	LD_LIBRARY_PATH="$(SPIKE_LIBDIR):$${LD_LIBRARY_PATH:-}" \
+		$(SPIKE) --isa=rv64imc_zicsr --extension=xqmac projection_X1
+
+profile-projection: projection-benchmark
+	python3 ../../scripts/profile_projection.py --spike "$(SPIKE)" \
+		--objdump "$(OBJDUMP)" --nm "$(NM)" --elf projection_B0 \
+		--function matrix_multiply_scalar_transposed --configuration B0 \
+		--compiler-flags "$(CFLAGS_B0)" --work-units 7262208 \
+		--output ../../results/projection_B0.json
+	python3 ../../scripts/profile_projection.py --spike "$(SPIKE)" \
+		--objdump "$(OBJDUMP)" --nm "$(NM)" --elf projection_B1 \
+		--function matrix_multiply_scalar_transposed --configuration B1 \
+		--compiler-flags "$(CFLAGS_B1)" --work-units 7262208 \
+		--output ../../results/projection_B1.json
+	python3 ../../scripts/profile_projection.py --spike "$(SPIKE)" \
+		--objdump "$(OBJDUMP)" --nm "$(NM)" --elf projection_X1 \
+		--function matrix_multiply_xqmac8_transposed --configuration X1 \
+		--compiler-flags "$(CFLAGS_B1) -DUSE_XQMAC8" --work-units 7262208 \
+		--extension xqmac --libdir "$(SPIKE_LIBDIR)" \
+		--output ../../results/projection_X1.json
+
+projection_B0: projection_bench.c ../common/crt.S \
+		../common/syscalls.c Makefile
+	$(RISCV_CC) $(CFLAGS_B0) -T../common/test.ld -I../common \
+		-o $@ projection_bench.c ../common/crt.S ../common/syscalls.c
+
+projection_B1: projection_bench.c ../common/crt.S \
+		../common/syscalls.c Makefile
+	$(RISCV_CC) $(CFLAGS_B1) -DMATRIX_B1 -T../common/test.ld -I../common \
+		-o $@ projection_bench.c ../common/crt.S ../common/syscalls.c
+
+projection_X1: projection_bench.c custom_isa.h ../common/crt.S \
+		../common/syscalls.c Makefile
+	$(RISCV_CC) $(CFLAGS_B1) -DUSE_XQMAC8 -T../common/test.ld -I../common \
+		-o $@ projection_bench.c ../common/crt.S ../common/syscalls.c
 
 matrix_xqmac8_B0: matrix_xqmac8_test.c ../common/crt.S \
 		../common/syscalls.c Makefile
@@ -66,4 +109,5 @@ $(TARGET)_B1.objdump: $(TARGET)_B1
 clean:
 	rm -f $(TARGET) $(TARGET)_B1 $(TARGET).objdump* $(TARGET)_B1.objdump* \
 		$(TARGET).memfile custom_isa_ref_test custom_isa_spike_test \
-		matrix_xqmac8_B0 matrix_xqmac8_B1 matrix_xqmac8_X1
+		matrix_xqmac8_B0 matrix_xqmac8_B1 matrix_xqmac8_X1 \
+		projection_B0 projection_B1 projection_X1
